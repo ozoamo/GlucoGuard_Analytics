@@ -11,7 +11,7 @@ st.sidebar.success("Select a tab above.")
 
 # # Page information
 
-st.write("# Welcome to PROHI Dashboard! 👋")
+st.write("# Welcome to GlucoGuard! 👋")
 
 st.markdown(
 """
