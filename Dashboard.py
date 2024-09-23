@@ -41,14 +41,14 @@ enhance the problem domain related to the selected dataset.
 
 ### UNCOMMENT THE CODE BELOW TO SEE EXAMPLE OF INPUT WIDGETS
 
-# # DATAFRAME MANAGEMENT
-# import numpy as np
+# DATAFRAME MANAGEMENT
+import numpy as np
 
-# dataframe = np.random.randn(10, 20)
-# st.dataframe(dataframe)
+dataframe = np.random.randn(10, 20)
+st.dataframe(dataframe)
 
-# # Add a slider to the sidebar:
-# add_slider = st.slider(
-#     'Select a range of values',
-#     0.0, 100.0, (25.0, 75.0)
-# )
+# Add a slider to the sidebar:
+add_slider = st.slider(
+    'Select a range of values',
+    0.0, 100.0, (25.0, 75.0)
+)
