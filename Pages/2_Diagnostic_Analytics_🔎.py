@@ -4,7 +4,7 @@ import plotly.express as px
 import pandas as pd
 from sklearn.cluster import KMeans
 
-st.title("Diagnostic Analytics")
+st.title("Diagnostic Analytics: Mapping Diabetic Patient Journeys")
 st.markdown("## Correlation of various healthcare features in diabetic patients")
 # Generate random data
 np.random.seed(42)  # For reproducibility
@@ -45,7 +45,7 @@ st.markdown("""
 """)
 
 # Set the title of the app
-st.markdown('## Mapping Diabetic Patient Journeys: Clustering Lab Procedures and Hospital Stays')
+st.markdown('## Clustering Lab Procedures and Hospital Stays')
 
 # Set the number of samples
 n_samples = 300
@@ -71,7 +71,7 @@ fig = px.scatter(df,
                  x='time_in_hospital', 
                  y='num_lab_procedures', 
                  color='cluster', 
-                 title='K-Means Clustering of Diabetic Patient Healthcare Features',
+                 title='K-Means Clustering',
                  labels={'time_in_hospital': 'Time in Hospital (days)', 
                          'num_lab_procedures': 'Number of Lab Procedures'},
                  color_continuous_scale=px.colors.sequential.Viridis)
