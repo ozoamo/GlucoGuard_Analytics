@@ -14,7 +14,7 @@ df = pd.read_csv('diabetes_clean.csv')
 st.title('Descriptive Analytics of Diabetes Dataset')
 
 # Sidebar for user selection
-columns = df.select_dtypes(include=['int64', 'float64','category']).columns
+columns = df.select_dtypes(include=['int64', 'float64']).columns
 selected_column = st.sidebar.selectbox('Select a column for descriptive analysis:', columns)
 
 # Calculate descriptive statistics
@@ -59,7 +59,7 @@ cat_value_counts.columns = [selected_cat_col, 'Count']
 # Create a bar chart using Plotly
 fig = px.bar(cat_value_counts, x=selected_cat_col, y='Count', 
              title=f"Distribution of {selected_cat_col}",
-             labels={selected_cat_col: selected_cat_col, 'Count': 'Count'},
+             labels={selected_cat_col: selected_cat_col, 'Count': 'Prevalence(%)'},
              template="plotly_white")
 
 # Display the plot 
@@ -95,3 +95,24 @@ fig_1 = px.bar(age_counts, x='age', y='count',
 # Display the histogram 
 st.plotly_chart(fig_1)
 
+# Sidebar header
+st.sidebar.header('Select an Encoded Categorical Variable')
+
+# List of encoded categorical columns
+encoded_categorical_columns = ['admission_type_id', 'discharge_disposition_id', 'admission_source_id']
+
+# Dropdown for selecting one of the encoded categorical variables
+selected_encoded_col = st.sidebar.selectbox('Select a column:', encoded_categorical_columns)
+
+# Calculate mean, median, and mode for the selected column
+if selected_encoded_col:
+    st.write(f"### Descriptive Statistics for `{selected_encoded_col}`")
+    
+    mean_val = df[selected_encoded_col].mean()
+    median_val = df[selected_encoded_col].median()
+    mode_val = df[selected_encoded_col].mode()[0]  # The first mode if there are multiple
+    
+    # Display the results
+    st.write(f"**Mean**: {mean_val}")
+    st.write(f"**Median**: {median_val}")
+    st.write(f"**Mode**: {mode_val}")
