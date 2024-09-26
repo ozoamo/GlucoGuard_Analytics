@@ -10,11 +10,11 @@ st.write("# Descriptive Analytics #")
 # Load the dataset
 df = pd.read_csv('diabetes_clean.csv')
 
-# Title of the Streamlit app
+# Title p
 st.title('Descriptive Analytics of Diabetes Dataset')
 
 # Sidebar for user selection
-columns = df.select_dtypes(include=['int64', 'float64']).columns
+columns = df.select_dtypes(include=['int64', 'float64','category']).columns
 selected_column = st.sidebar.selectbox('Select a column for descriptive analysis:', columns)
 
 # Calculate descriptive statistics
@@ -62,7 +62,7 @@ fig = px.bar(cat_value_counts, x=selected_cat_col, y='Count',
              labels={selected_cat_col: selected_cat_col, 'Count': 'Count'},
              template="plotly_white")
 
-# Display the plot in Streamlit
+# Display the plot 
 st.plotly_chart(fig)
 
 st.markdown("""
@@ -76,7 +76,7 @@ st.markdown("""
 
 """)
 
-# Title of the Streamlit app
+# Title 
 st.subheader('Age distribution - Histogram')
 
 # Extract the 'age' column for the histogram
@@ -92,7 +92,6 @@ fig_1 = px.bar(age_counts, x='age', y='count',
              labels={'age': 'Age Range', 'count': 'Frequency'},
              template='plotly_white')
 
-# Display the histogram in Streamlit
+# Display the histogram 
 st.plotly_chart(fig_1)
-
 
