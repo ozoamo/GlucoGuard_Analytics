@@ -4,8 +4,7 @@ import plotly.express as px
 import pandas as pd
 from sklearn.cluster import KMeans
 
-st.title("Diagnostic Analytics: Mapping Diabetic Patient Journeys")
-st.markdown("## Correlation of various healthcare features in diabetic patients")
+st.title("Correlation of various healthcare features in diabetic patients")
 # Generate random data
 np.random.seed(42)  # For reproducibility
 data = {
@@ -45,7 +44,7 @@ st.markdown("""
 """)
 
 # Set the title of the app
-st.markdown('## Clustering Lab Procedures and Hospital Stays')
+st.title('Clustering Lab Procedures and Hospital Stays')
 
 # Set the number of samples
 n_samples = 300

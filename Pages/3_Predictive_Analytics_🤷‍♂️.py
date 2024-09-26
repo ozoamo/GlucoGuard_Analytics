@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-st.title("Predictive Analytics ")
-
 # Function to simulate prediction (replace with your actual model)
 def predict_readmission(features):
     # Simulated prediction logic (you should replace this with your actual model)
