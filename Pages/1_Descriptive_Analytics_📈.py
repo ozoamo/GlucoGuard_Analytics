@@ -50,7 +50,7 @@ categorical_columns = ['age', 'race', 'gender']
 selected_cat_col = st.sidebar.selectbox('Select a categorical column:', categorical_columns)
 
 # Plot the distribution of the selected categorical column
-st.write(f"## Distribution of `{selected_cat_col}`")
+st.write(f"## Distribution of cases of diabetes based on `{selected_cat_col}`")
 
 # Count the values in the selected column
 cat_value_counts = df[selected_cat_col].value_counts().reset_index()
@@ -68,12 +68,31 @@ st.plotly_chart(fig)
 st.markdown("""
 ### Key Observations:
 
-1. **time_in_hospital and num_lab_procedures**: The correlation coefficient is **0.003**, indicating a very weak positive correlation. This suggests that patients who stay longer in the hospital do not significantly undergo more laboratory procedures.
+1.  **Age**: The data indicates age group with the highest amount of cases of diabetes is the age group between 70-80 years.The lowest amount of cases of diabetes is the age group 0-10 years old. An intresting trend that can seen is as an individual gets older,the risk of getting diabetes increases.
+            
+2. **Race(Ethnicity)**: The data indicates that the ethnicity with the highest amount of cases of diabetes are Caucasian.
 
-2. **num_medications and number_diagnoses**: The correlation coefficient is **0.15**, reflecting a weak positive correlation. This may suggest that patients with a higher number of diagnoses tend to receive slightly more medications, although the relationship is not strong.
-
-3. **number_outpatient and number_emergency**: The correlation coefficient is **-0.27**, indicating a moderate negative correlation. This implies that patients who frequently visit outpatient services are less likely to require emergency care.
+3. **Gender**: The data indicates that the gender with the highest amount of cases of diabetes is female.
 
 """)
+
+# Title of the Streamlit app
+st.subheader('Age distribution - Histogram')
+
+# Extract the 'age' column for the histogram
+age_counts = df['age'].value_counts().reset_index()
+age_counts.columns = ['age', 'count']
+
+# Sort age groups if they are in categorical ranges
+age_counts = age_counts.sort_values('age')
+
+# Plotly histogram
+fig_1 = px.bar(age_counts, x='age', y='count', 
+             title='Age Distribution in Dataset',
+             labels={'age': 'Age Range', 'count': 'Frequency'},
+             template='plotly_white')
+
+# Display the histogram in Streamlit
+st.plotly_chart(fig_1)
 
 
