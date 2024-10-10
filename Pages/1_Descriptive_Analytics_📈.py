@@ -13,31 +13,6 @@ df = pd.read_csv('diabetes_clean.csv')
 # Title p
 st.title('Descriptive Analytics of Diabetes Dataset')
 
-# Sidebar for user selection
-columns = df.select_dtypes(include=['int64', 'float64']).columns
-selected_column = st.sidebar.selectbox('Select a column for descriptive analysis:', columns)
-
-# Calculate descriptive statistics
-mean = df[selected_column].mean()
-median = df[selected_column].median()
-mode = df[selected_column].mode()[0]  # Take the first mode if there are multiple
-
-# Display results
-st.write(f"### Descriptive Analytics for `{selected_column}`")
-st.write(f"**Mean**: {mean}")
-st.write(f"**Median**: {median}")
-st.write(f"**Mode**: {mode}")
-
-st.markdown("""
-### Key Observations:
-
-1. **Race**: The correlation coefficient is **0.003**, indicating a very weak positive correlation. This suggests that patients who stay longer in the hospital do not significantly undergo more laboratory procedures.
-
-2. **Age**: The correlation coefficient is **0.15**, reflecting a weak positive correlation. This may suggest that patients with a higher number of diagnoses tend to receive slightly more medications, although the relationship is not strong.
-
-3. **Gender**: The correlation coefficient is **-0.27**, indicating a moderate negative correlation. This implies that patients who frequently visit outpatient services are less likely to require emergency care.
-
-""")
 
 
 # Plot categorical distribution
@@ -97,3 +72,61 @@ fig_1 = px.bar(age_counts, x='age', y='count',
 # Display the histogram 
 st.plotly_chart(fig_1)
 
+# Group by readmission and calculate the average time in hospital
+time_in_hospital_mean = df.groupby('readmitted')['time_in_hospital'].mean()
+
+# Convert the result to a DataFrame for Plotly
+time_in_hospital_mean_df = time_in_hospital_mean.reset_index()
+
+# Plotting the average time in hospital by readmission status using Plotly
+fig_2 = px.bar(time_in_hospital_mean_df, 
+             x='readmitted', 
+             y='time_in_hospital', 
+             title='Average Time in Hospital by Readmission Status',
+             labels={'readmitted': 'Readmitted', 'time_in_hospital': 'Average Time in Hospital (Days)'},
+             color_discrete_sequence=['skyblue'])
+
+# Streamlit component to display the plot
+st.plotly_chart(fig_2)
+
+st.markdown("""
+### Key Observations:
+
+1. The highest average time by readmission status were <30. The reason to why <30(Short term readmission) had the highest average time could be possibly due to ineffective treatments(changes in medication). This could be the cause to the high probability of being readmitted for short term treatments.
+
+2. The lowest average time by readmission status were NO(no readmission). This may be due to proper treatment and fewer adverse effect, which could be the main cause behind the low probability of being readmitted for a long time.
+""")
+
+# Analyze readmission rates by medication change
+medication_change_readmission = df.groupby('change')['readmitted'].value_counts(normalize=True).unstack()
+
+# Convert the results to a DataFrame for Plotly
+medication_change_readmission_df = medication_change_readmission.reset_index()
+
+# Melt the DataFrame for easier plotting with Plotly
+medication_change_readmission_melted = medication_change_readmission_df.melt(id_vars='change', 
+                                                                            value_vars=medication_change_readmission.columns, 
+                                                                            var_name='readmitted', 
+                                                                            value_name='proportion')
+
+# Plotting the results using Plotly
+fig_3 = px.bar(medication_change_readmission_melted, 
+             x='change', 
+             y='proportion', 
+             color='readmitted', 
+             title='Readmission Rates by Medication Change',
+             labels={'change': 'Medication Change', 'proportion': 'Proportion of Readmissions'},
+             color_discrete_sequence=['skyblue', 'salmon', 'lightgreen'],
+             barmode='stack')
+
+# Streamlit component to display the plot
+st.plotly_chart(fig_3)
+
+st.markdown("""
+### Key Observations:
+
+1. The high proportion of NO(No readmission) patient recieving no medication changes may suggest that possibly the patient complience may be the cause behind the high proportion rate of (NO) no readmission patients reciving no changes in their medication.
+
+2. The high proportion of >30(long-term readmitted) recieving medication changes may suggest that possibly the ineffective treatments of the long-term readmitted patients may be the cause behind the high proportion of long-term readmitted patients receviing medication changes.  
+            
+""")
