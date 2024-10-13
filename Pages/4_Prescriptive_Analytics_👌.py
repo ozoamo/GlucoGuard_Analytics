@@ -1,117 +1,164 @@
-import streamlit as st
+import os
+import pickle
 import pandas as pd
 import numpy as np
+import streamlit as st
+from sklearn.preprocessing import MinMaxScaler
 import shap
-import plotly.express as px
-import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt  # Import matplotlib for plotting
 
-st.title("SHAP Analysis of Diabetic Patients Readmission Prediction")
+# Load the pre-trained model
+model_path = r"C:\Users\aozor\Documents\KI\semester 3\course 8\GlucoGuard_Analytics\jupyter-notebooks\best_model.pkl"
+with open(model_path, 'rb') as file:
+    model = pickle.load(file)
 
-# Set random seed for reproducibility
-np.random.seed(42)
-
-# Generate random data
-data = {
-    'time_in_hospital': np.random.randint(1, 15, size=100),
-    'num_lab_procedures': np.random.randint(1, 50, size=100),
-    'num_procedures': np.random.randint(0, 10, size=100),
-    'num_medications': np.random.randint(1, 30, size=100),
-    'number_outpatient': np.random.randint(0, 5, size=100),
-    'number_emergency': np.random.randint(0, 3, size=100),
-    'number_inpatient': np.random.randint(0, 2, size=100),
-    'number_diagnoses': np.random.randint(1, 20, size=100),
-    'readmitted': np.random.choice([0, 1], size=100)  # Target variable
+# Define the categorical mappings globally
+cats = {
+    'age': ['[0-10)', '[10-20)', '[20-30)', '[30-40)', '[40-50)', 
+            '[50-60)', '[60-70)', '[70-80)', '[80-90)', '[90-100)'],
+    'max_glu_serum_transformed': ['Not measured', 'Normal', 'Elevated', 'High'],
+    'A1Cresult_transformed': ['Not measured', 'Normal', 'High'],
+    'race': ['Caucasian', 'African American', 'Hispanic', 'Asian', 'Other'],  
+    'gender': ['Male', 'Female'],  
+    'change': ['No', 'Yes'],  
+    'diabetesMed': ['No', 'Yes']  
 }
 
-# Create DataFrame
-df = pd.DataFrame(data)
+# Function to preprocess input data
+def preprocess_input(data):
+    # Create a DataFrame from user input
+    df_input = pd.DataFrame(data, index=[0])
 
-# Define features and target
-X = df.drop('readmitted', axis=1)
-y = df['readmitted']
+    # Apply ordinal encoding
+    for col in df_input.columns:
+        if col in cats:
+            df_input[col] = pd.Categorical(df_input[col], categories=cats[col], ordered=True)
+            df_input[col] = df_input[col].cat.codes
 
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Grouping medications
+    for med in ['metformin', 'repaglinide', 'nateglinide', 'chlorpropamide', 
+                'glimepiride', 'acetohexamide', 'glipizide', 'glyburide', 
+                'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 
+                'miglitol', 'troglitazone', 'tolazamide', 'examide', 
+                'citoglipton', 'insulin', 'glyburide-metformin', 
+                'glipizide-metformin', 'glimepiride-pioglitazone', 
+                'metformin-rosiglitazone', 'metformin-pioglitazone']:
+        df_input[med] = 1 if df_input[med].values[0] == 'Yes' else 0
 
-# Train a Random Forest Classifier
-model = RandomForestClassifier(random_state=42)
-model.fit(X_train, y_train)
+    # Additional grouping logic 
+    df_input['SU'] = df_input[['chlorpropamide', 'glimepiride', 
+                                'acetohexamide', 'glipizide', 
+                                'glyburide', 'tolbutamide', 
+                                'tolazamide']].max(axis=1)
+    df_input['mitiglinides'] = df_input[['repaglinide', 'nateglinide']].max(axis=1)
+    df_input['thiazolidinediones'] = df_input[['pioglitazone', 'rosiglitazone']].max(axis=1)
+    df_input['glucosidase_inh'] = df_input[['acarbose','miglitol']].max(axis=1)
 
-# Explain the predictions using SHAP
-explainer = shap.TreeExplainer(model)
-shap_values = explainer.shap_values(X_test)
+    # Drop original medication columns
+    df_input.drop(columns=['chlorpropamide', 'glimepiride', 'acetohexamide', 
+                           'glipizide', 'glyburide', 'tolbutamide', 
+                           'tolazamide', 'repaglinide', 'nateglinide', 
+                           'pioglitazone', 'rosiglitazone', 'acarbose', 
+                           'miglitol'], inplace=True, errors='ignore')
 
-# Select a single explanation for the waterfall plot
-shap_values_single = shap_values[1][0]  # For the positive class
-expected_value_single = explainer.expected_value[1]
+    # Selecting numerical features
+    num_f = df_input[['time_in_hospital', 'num_lab_procedures', 
+                      'num_procedures', 'num_medications']]
+    
+    # One-hot encoding of nominal features
+    nominal_features = [col for col in ['race', 'gender', 'change', 'diabetesMed'] if col in df_input.columns]
+    if nominal_features:
+        nominal_f = pd.get_dummies(df_input[nominal_features])
+    else:
+        nominal_f = pd.DataFrame()  # Create an empty DataFrame if no nominal features are present
+    
+    # Concatenate all features
+    X_all = pd.concat([nominal_f, num_f, df_input], axis=1)
 
-# Create an Explanation object
-explanation_single = shap.Explanation(values=shap_values_single, base_values=expected_value_single, data=X_test.iloc[0])
+    # Normalizing the features
+    scaler = MinMaxScaler()
+    X_normalized = scaler.fit_transform(X_all.values)
+    
+    return pd.DataFrame(X_normalized, columns=X_all.columns)
 
-# Streamlit code to display the waterfall plot
-# Create a SHAP waterfall plot
-fig = plt.figure()
-shap.waterfall_plot(explanation_single)  # Create the waterfall plot without ax
+# Function for SHAP analysis
+def perform_shap_analysis(X):
+    # Create a SHAP explainer
+    explainer = shap.Explainer(model)
 
-# Compute SHAP values for the entire test set
-explainer = shap.Explainer(model)
-shap_values = explainer(X_test)
+    # Calculate SHAP values
+    shap_values = explainer(X)
 
-# If shap_values.values is 3D, flatten it to 2D
-if len(shap_values.values.shape) > 2:
-    # Extract the first output if it's a multi-output model
-    shap_values_values = shap_values.values[:, :, 0]
-else:
-    shap_values_values = shap_values.values
+    return shap_values, explainer  # Return both shap_values and explainer
 
-# Create a DataFrame for SHAP values and feature names
-shap_values_df = pd.DataFrame(shap_values_values, columns=X_test.columns)
+# Streamlit UI
+st.title("Diabetes Readmission Prediction")
 
-# Calculate the mean absolute SHAP values for each feature
-mean_shap_values = np.abs(shap_values_df).mean(axis=0)
+# User inputs
+age = st.selectbox("Age Group:", options=cats['age'])
+max_glu = st.selectbox("Max Glucose Serum:", options=cats['max_glu_serum_transformed'])
+A1C = st.selectbox("A1C Result:", options=cats['A1Cresult_transformed'])
+time_in_hospital = st.number_input("Time in Hospital (days):", min_value=1, max_value=365)
+num_lab_procedures = st.number_input("Number of Lab Procedures:", min_value=0, max_value=100)
+num_procedures = st.number_input("Number of Procedures:", min_value=0, max_value=100)
+num_medications = st.number_input("Number of Medications:", min_value=1, max_value=100)
 
-# Compute SHAP values for the entire test set
-explainer = shap.Explainer(model)
-shap_values = explainer(X_test)
+# User input for medications
+medications = ['metformin', 'repaglinide', 'nateglinide', 'chlorpropamide', 
+               'glimepiride', 'acetohexamide', 'glipizide', 'glyburide', 
+               'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 
+               'miglitol', 'troglitazone', 'tolazamide', 'examide', 
+               'citoglipton', 'insulin', 'glyburide-metformin', 
+               'glipizide-metformin', 'glimepiride-pioglitazone', 
+               'metformin-rosiglitazone', 'metformin-pioglitazone']
 
-# If shap_values.values is 3D, flatten it to 2D
-if len(shap_values.values.shape) > 2:
-    # Extract the first output if it's a multi-output model
-    shap_values_values = shap_values.values[:, :, 0]
-else:
-    shap_values_values = shap_values.values
+med_input = {med: st.selectbox(f"{med.capitalize()} (Yes/No):", ["Yes", "No"]) for med in medications}
 
-# Create a DataFrame for SHAP values and feature names
-shap_values_df = pd.DataFrame(shap_values_values, columns=X_test.columns)
+# User inputs for categorical variables
+race = st.selectbox("Race:", options=cats['race'])
+gender = st.selectbox("Gender:", options=cats['gender'])
+change = st.selectbox("Change in Medication:", options=cats['change'])
+diabetesMed = st.selectbox("Diabetes Medication:", options=cats['diabetesMed'])
 
-# Calculate the mean absolute SHAP values for each feature
-mean_shap_values = np.abs(shap_values_df).mean(axis=0)
+# Convert input to dictionary
+user_input = {
+    'age': age,
+    'max_glu_serum_transformed': max_glu,
+    'A1Cresult_transformed': A1C,
+    'time_in_hospital': time_in_hospital,
+    'num_lab_procedures': num_lab_procedures,
+    'num_procedures': num_procedures,
+    'num_medications': num_medications,
+    'race': race,
+    'gender': gender,
+    'change': change,
+    'diabetesMed': diabetesMed,
+    **med_input
+}
 
-# Create a summary plot
-fig = px.scatter(
-    x=mean_shap_values.index,
-    y=mean_shap_values.values,
-    color=mean_shap_values.values,
-    labels={'x': 'Features', 'y': 'Mean Absolute SHAP Value'},
-    title='SHAP Summary Plot of All Features'
-)
+# Button to make predictions and perform SHAP analysis
+if st.button("Predict Readmission"):
+    # Preprocess the user input
+    processed_input = preprocess_input(user_input)
 
-# Update layout for better readability
-fig.update_layout(
-    xaxis_title="Features",
-    yaxis_title="Mean Absolute SHAP Value",
-    showlegend=False
-)
+    # Make prediction
+    prediction = model.predict(processed_input)
 
-# Display the plot in Streamlit
-st.plotly_chart(fig)  # Correct way to display a Plotly figure
+    # Output result
+    st.success("Prediction: {}".format("Readmitted" if prediction[0] == 1 else "Not Readmitted"))
 
-st.markdown("""
-### Interpretation
+    # Perform SHAP analysis
+    shap_values, explainer = perform_shap_analysis(processed_input)
 
-The mean absolute SHAP value for **"Number of Lab Procedures"** is **0.058**, the highest among all features, 
-indicating its significant influence on the model's predictions. This suggests that 
-variations in the number of lab procedures can substantially affect the readmission of diabetic patients.
-""")
+    # SHAP summary plot
+    st.subheader("SHAP Summary Plot")
+    fig, ax = plt.subplots()  # Create a new figure and axis
+    shap.summary_plot(shap_values, feature_names=processed_input.columns, show=False)
+    st.pyplot(fig)  # Pass the figure to st.pyplot
+
+    # SHAP force plot for the first prediction
+    st.subheader("SHAP Force Plot")
+    fig2, ax2 = plt.subplots()  # Create another figure for the force plot
+    # Pass the correct values to the force plot
+    shap.force_plot(explainer.expected_value, shap_values.values[0], processed_input.values[0], matplotlib=True, show=False)
+    st.pyplot(fig2)  # Pass the figure to st.pyplot
