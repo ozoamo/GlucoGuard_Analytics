@@ -6,7 +6,7 @@ st.set_page_config(
 )
 
 # Sidebar configuration
-st.sidebar.image("./assets/project-logo.jpg",)
+st.sidebar.image("./assets/glucoguard-logo.png",)
 st.sidebar.success("Select a tab above.")
 
 # # Page information
