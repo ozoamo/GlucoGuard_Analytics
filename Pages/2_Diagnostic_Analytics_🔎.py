@@ -1,90 +1,57 @@
 import streamlit as st
-import numpy as np
-import plotly.express as px
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
 from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
-st.title("Correlation of various healthcare features in diabetic patients")
-# Generate random data
-np.random.seed(42)  # For reproducibility
-data = {
-    'time_in_hospital': np.random.randint(1, 15, size=100),
-    'num_lab_procedures': np.random.randint(1, 50, size=100),
-    'num_procedures': np.random.randint(0, 10, size=100),
-    'num_medications': np.random.randint(1, 30, size=100),
-    'number_outpatient': np.random.randint(0, 5, size=100),
-    'number_emergency': np.random.randint(0, 3, size=100),
-    'number_inpatient': np.random.randint(0, 2, size=100),
-    'number_diagnoses': np.random.randint(1, 20, size=100),
-}
+# Load dataset
+df = pd.read_csv('diabetes_clean.csv')
 
-# Create a DataFrame
-df = pd.DataFrame(data)
+# Streamlit app
+st.title("Correlation Analysis between Numerical Variables")
 
-# Compute the correlation matrix
-correlation_matrix = df.corr()
+# List of variables for dropdown menus
+variables = ['time_in_hospital', 'num_lab_procedures', 'num_procedures', 
+             'num_medications', 'number_outpatient', 'number_emergency', 
+             'number_inpatient', 'number_diagnoses']
 
-# Create a heatmap using Plotly Express
-fig = px.imshow(correlation_matrix,
-                text_auto=True,
-                color_continuous_scale='Viridis')
+# Dropdown for selecting variables in the sidebar
+st.sidebar.header("Select Variables for Pearson Correlation Analysis")
+var1 = st.sidebar.selectbox('Select first variable:', variables)
+var2 = st.sidebar.selectbox('Select second variable:', variables)
 
-# Display the heatmap in Streamlit
-st.plotly_chart(fig)
+# Check if the variables are the same
+if var1 == var2:
+    st.warning('Please select two different variables.')
+else:
+    # Create two columns for layout
+    col1, col2 = st.columns(2)
 
-st.markdown("""
-### Key Observations:
+    with col1:
+        # Plot linear regression
+        st.write(f"Correlation between **{var1}** and **{var2}**")
+        fig, ax = plt.subplots()
+        sns.regplot(x=df[var1], y=df[var2], ax=ax, line_kws={"color": "red"})
+        ax.set_xlabel(var1)
+        ax.set_ylabel(var2)
+        st.pyplot(fig)
 
-1. **time_in_hospital and num_lab_procedures**: The correlation coefficient is **0.003**, indicating a very weak positive correlation. This suggests that patients who stay longer in the hospital do not significantly undergo more laboratory procedures.
+        # Calculate Pearson correlation coefficient
+        corr_coeff, _ = pearsonr(df[var1], df[var2])
+        st.write(f"Pearson correlation coefficient: **{corr_coeff:.2f}**")
 
-2. **num_medications and number_diagnoses**: The correlation coefficient is **0.15**, reflecting a weak positive correlation. This may suggest that patients with a higher number of diagnoses tend to receive slightly more medications, although the relationship is not strong.
+    with col2:
+        # Key insights
+        st.markdown("""
+        ### Key Insights
 
-3. **number_outpatient and number_emergency**: The correlation coefficient is **-0.27**, indicating a moderate negative correlation. This implies that patients who frequently visit outpatient services are less likely to require emergency care.
+        1. **Hospital stays** tend to increase with more medications and procedures:
+           - Time in hospital has a moderate correlation with the number of medications (**0.46**) and procedures (**0.38**). 
+           - Additionally, there is a moderate correlation with lab procedures (**0.32**), suggesting that these factors may work together in managing patient care.
 
-""")
-
-# Set the title of the app
-st.title('Clustering Lab Procedures and Hospital Stays')
-
-# Set the number of samples
-n_samples = 300
-
-# Generate random data for two features, creating closer distinct clusters
-np.random.seed(42)
-
-# Create three distinct clusters with closer means and lower standard deviation
-cluster_1 = np.random.normal(loc=(5, 15), scale=0.5, size=(100, 2))  # Cluster 1
-cluster_2 = np.random.normal(loc=(6, 18), scale=0.5, size=(100, 2))  # Cluster 2
-cluster_3 = np.random.normal(loc=(7, 22), scale=0.5, size=(100, 2))  # Cluster 3
-
-# Combine clusters into one dataset
-data = np.vstack([cluster_1, cluster_2, cluster_3])
-df = pd.DataFrame(data, columns=['time_in_hospital', 'num_lab_procedures'])
-
-# Apply K-Means clustering
-kmeans = KMeans(n_clusters=3, random_state=42)
-df['cluster'] = kmeans.fit_predict(df[['time_in_hospital', 'num_lab_procedures']])
-
-# Create a scatter plot using Plotly Express
-fig = px.scatter(df, 
-                 x='time_in_hospital', 
-                 y='num_lab_procedures', 
-                 color='cluster', 
-                 title='K-Means Clustering',
-                 labels={'time_in_hospital': 'Time in Hospital (days)', 
-                         'num_lab_procedures': 'Number of Lab Procedures'},
-                 color_continuous_scale=px.colors.sequential.Viridis)
-
-# Display the scatter plot in Streamlit
-st.plotly_chart(fig)
-
-st.markdown("""
-### Key Observations:
-
-The K-Means clustering analysis reveals three distinct patient groups based on **`time_in_hospital`** and **`num_lab_procedures`**:
-
-1. **Cluster 1**: Patients with shorter hospital stays and fewer lab procedures, likely representing less severe health conditions.
-2. **Cluster 2**: Individuals with moderate hospital stays and lab procedures, indicating more complex health issues.
-3. **Cluster 3**: Patients with longer stays and a higher number of lab procedures, suggesting severe health conditions requiring extensive medical attention.
-
-""")
+        2. **Outpatient and emergency visits** seem to have minimal correlation with most other variables:
+           - Outpatient visits have a correlation range of approximately **-0.011 to 0.091**.
+           - Emergency visits show a correlation range of about **-0.039 to 0.27**.
+        """)
