@@ -2,7 +2,9 @@ import streamlit as st
 
 st.set_page_config(
     page_title="PROHI Dashboard",
-    page_icon="👋",
+    
+    #page_icon="👋",
+     page_icon="./assets/Page-icon.png",
 )
 
 # Sidebar configuration
