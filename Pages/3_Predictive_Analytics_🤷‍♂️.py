@@ -9,12 +9,28 @@ model_pkl_file = "jupyter-notebooks/model.pkl"
 with open(model_pkl_file, 'rb') as file:
     model = pickle.load(file)
 
+    st.set_page_config(
+    page_title="PROHI Dashboard",
+    
+    #page_icon="👋",
+    page_icon="./assets/Page-icon.png",
+)
+
 # Set the title of the Streamlit app
-st.title("GlucoGuard Analytics Dashboard")
+st.title("GlucoGuard Predictive Dashboard")
 
+# page_icon="./assets/Page-icon.png"
+# Sidebar configuration
+st.sidebar.image("./assets/glucoguard-logo.png",)
+st.markdown(
+"""
+    ##### This tool helps you predict the chances of a patient being readmitted by analyzing their key health information, supporting better care decisions.
+
+"""
+)
 # Input features for prediction
-st.header("Enter Patient Data")
-
+#st.header("Enter Patient and Clinical Data")
+st.markdown("<h2 style='font-size:20px;'>Enter Patient and Clinical Data</h2>", unsafe_allow_html=True)
 # Create two columns for the input fields
 col1, col2 = st.columns(2)
 
@@ -76,6 +92,14 @@ med_inputs = {}
 st.subheader("List of Medications")
 st.write("Check the medications the patient takes:")
 
+
+
+
+
+
+
+
+
 # Create two columns for medications
 med_col1, med_col2 = st.columns(2)
 
@@ -129,7 +153,39 @@ for med in medications:
 scaler = MinMaxScaler()
 normalized_input_data = scaler.fit_transform(input_data)
 
+
+
+
+
+#Button
+    
+
+st.markdown("""
+<style>
+    div.stButton > button:first-child {
+        background-color: #b3f2ce; /* Light green background */
+        color: black; /* Black text */
+        border-radius: 8px; /* Rounded corners */
+        padding: 12px 20px; /* Larger padding for a bigger button */
+        font-size: 18px; /* Larger font size for readability */
+        font-weight: bold; /* Bold text */
+        border: 3px solid black; /* Thick black border */
+        cursor: pointer; /* Pointer cursor on hover */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        transition: background-color 0.3s ease; /* Smooth background transition */
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #76C776; /* Darker light green on hover */
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Perform prediction
+
 if st.button("Predict Readmission"):
     prediction = model.predict(normalized_input_data)
     st.write("The model predicts the patient will " + ("be readmitted." if prediction[0] == 1 else "not be readmitted."))
+   
+
+     
+
