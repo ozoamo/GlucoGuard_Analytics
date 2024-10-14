@@ -36,8 +36,11 @@ col1, col2 = st.columns(2)
 
 # Define the input fields in the first column
 with col1:
-    # Input age as a text box
-    age = st.text_input("Age (years)", placeholder="Enter age (0-100)", value="")
+    # Age selection dropdown
+    age = st.selectbox("Age Group", 
+                       ['[0-10)', '[10-20)', '[20-30)', '[30-40)', 
+                        '[40-50)', '[50-60)', '[60-70)', 
+                        '[70-80)', '[80-90)', '[90-100)'])
     
     # Gender selection
     gender = st.selectbox("Gender", ["Male", "Female", "Unknown"])
@@ -78,11 +81,11 @@ with med_col2:
 
 # Medications list
 medications = [
-    'metformin', 'troglitazone', 'examide', 'citoglipton',
-    'insulin', 'glyburide-metformin', 'glipizide-metformin', 
-    'glimepiride-pioglitazone', 'metformin-rosiglitazone', 
-    'metformin-pioglitazone', 'SU', 'mitiglinides', 
-    'thiazolidinediones', 'glucosidase_inh'
+    'Metformin', 'Troglitazone', 'Examide', 'Citoglipton',
+    'Insulin', 'Glyburide-Metformin', 'Glipizide-Metformin', 
+    'Glimepiride-Pioglitazone', 'Metformin-Rosiglitazone', 
+    'Metformin-Pioglitazone', 'Sulfonylureas', 'Mitiglinides', 
+    'Thiazolidinediones', 'Glucosidase Inhibitors'
 ]
 
 # Initialize a dictionary to hold medication selections
@@ -91,14 +94,6 @@ med_inputs = {}
 # Medication selection section
 st.subheader("List of Medications")
 st.write("Check the medications the patient takes:")
-
-
-
-
-
-
-
-
 
 # Create two columns for medications
 med_col1, med_col2 = st.columns(2)
@@ -117,14 +112,25 @@ with med_col2:
         med_inputs[med] = st.checkbox(med.capitalize(), value=False, disabled=medication_disabled)
 
 # Encode the categorical variables
-age_cat = {str(i): i for i in range(101)}  # Updated to accept any age between 0 and 100
+age_cat = {
+    '[0-10)': 0, 
+    '[10-20)': 1, 
+    '[20-30)': 2, 
+    '[30-40)': 3, 
+    '[40-50)': 4, 
+    '[50-60)': 5, 
+    '[60-70)': 6, 
+    '[70-80)': 7, 
+    '[80-90)': 8, 
+    '[90-100)': 9
+}
 max_glu_serum_cat = {'Not measured': 0, 'Normal': 1, 'Elevated': 2, 'High': 3}
 A1Cresult_cat = {'Not measured': 0, 'Normal': 1, 'High': 2}
 binary_map = {"No": 0, "Yes": 1}
 
 # Create an input DataFrame based on user inputs
 input_data = pd.DataFrame({
-    'age': [int(age) if age.isdigit() and 0 <= int(age) <= 100 else 0],  # Use the input age, default to 0 if invalid
+    'age': [age_cat[age]], 
     'max_glu_serum_transformed': [max_glu_serum_cat[max_glu_serum_transformed]],
     'A1Cresult_transformed': [A1Cresult_cat[A1Cresult_transformed]],
     'time_in_hospital': [time_in_hospital],
@@ -153,13 +159,7 @@ for med in medications:
 scaler = MinMaxScaler()
 normalized_input_data = scaler.fit_transform(input_data)
 
-
-
-
-
 #Button
-    
-
 st.markdown("""
 <style>
     div.stButton > button:first-child {
@@ -181,7 +181,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Perform prediction
-
 if st.button("Predict Readmission"):
     prediction = model.predict(normalized_input_data)
     st.write("The model predicts the patient will " + ("be readmitted." if prediction[0] == 1 else "not be readmitted."))
