@@ -9,11 +9,11 @@ model_pkl_file = "jupyter-notebooks/model.pkl"
 with open(model_pkl_file, 'rb') as file:
     model = pickle.load(file)
 
-    st.set_page_config(
-    page_title="PROHI Dashboard",
+st.set_page_config(
+page_title="GlucoGuard Dashboard",
     
-    #page_icon="👋",
-    page_icon="./assets/Page-icon.png",
+#page_icon="👋",
+page_icon="./assets/Page-icon.png",
 )
 
 # Set the title of the Streamlit app
