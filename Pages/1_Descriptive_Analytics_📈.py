@@ -82,7 +82,11 @@ st.markdown("""
 1. The highest average time by readmission status were <30(Short term readmission). The reason to why <30(Short term readmission) had the highest average time could be possibly due to ineffective treatments(changes in medication). This could be the cause to the high probability of being readmitted for short term treatments.
 
 2. The lowest average time by readmission status were NO(no readmission). This may be due to proper treatment and fewer adverse effect, which could be the main cause behind the low probability of being readmitted for a long time.
-""")
+
+3. Patients readmitted within 30 days have the longest average hospital stay, likely due to possible ineffective treatment or medication changes.
+
+4.Non-readmitted patients have the shortest stays, potentially indicating effective treatments with fewer adverse effects.    
+        """)
 
 # Analyze readmission rates by medication change
 medication_change_readmission = df.groupby('change')['readmitted'].value_counts(normalize=True).unstack()
@@ -112,7 +116,7 @@ st.plotly_chart(fig_3)
 st.markdown("""
 ### Key Observations:
 
-1. The high proportion of NO(No readmission) patient recieving no medication changes may suggest that possibly the patient complience may be the cause behind the high proportion rate of (NO) no readmission patients reciving no changes in their medication.
+1. The high proportion of NO(No readmission) patient recieving no medication changes may suggest that possibly the patient complience may be the cause behind the high proportion rate of NO (No readmission) patients reciving no changes in their medication.
 
 2. The high proportion of >30(long-term readmitted) recieving medication changes may suggest that possibly the ineffective treatments of the long-term readmitted patients may be the cause behind the high proportion of long-term readmitted patients receviing medication changes.  
             
