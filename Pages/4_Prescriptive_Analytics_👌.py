@@ -1,164 +1,164 @@
-import os
-import pickle
+import streamlit as st
 import pandas as pd
 import numpy as np
-import streamlit as st
-from sklearn.preprocessing import MinMaxScaler
+import pickle
 import shap
-import matplotlib.pyplot as plt  # Import matplotlib for plotting
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from sklearn.preprocessing import MinMaxScaler
 
-# Load the pre-trained model
-model_path = r"C:\Users\aozor\Documents\KI\semester 3\course 8\GlucoGuard_Analytics\jupyter-notebooks\best_model.pkl"
-with open(model_path, 'rb') as file:
+# Load the saved model
+model_pkl_file = "jupyter-notebooks/model.pkl"
+with open(model_pkl_file, 'rb') as file:
     model = pickle.load(file)
 
-# Define the categorical mappings globally
-cats = {
-    'age': ['[0-10)', '[10-20)', '[20-30)', '[30-40)', '[40-50)', 
-            '[50-60)', '[60-70)', '[70-80)', '[80-90)', '[90-100)'],
-    'max_glu_serum_transformed': ['Not measured', 'Normal', 'Elevated', 'High'],
-    'A1Cresult_transformed': ['Not measured', 'Normal', 'High'],
-    'race': ['Caucasian', 'African American', 'Hispanic', 'Asian', 'Other'],  
-    'gender': ['Male', 'Female'],  
-    'change': ['No', 'Yes'],  
-    'diabetesMed': ['No', 'Yes']  
+st.set_page_config(
+    page_title="GlucoGuard Dashboard",
+    page_icon="./assets/Page-icon.png",
+)
+
+# Set the title of the Streamlit app
+st.title("GlucoGuard Predictive Dashboard")
+
+# Sidebar configuration
+st.sidebar.image("./assets/glucoguard-logo.png")
+st.markdown(
+"""
+    ##### This tool helps you predict the chances of a patient being readmitted by analyzing their key health information, supporting better care decisions.
+"""
+)
+
+# Input features for prediction
+st.markdown("<h2 style='font-size:20px;'>Enter Patient and Clinical Data</h2>", unsafe_allow_html=True)
+
+# Create two columns for the input fields
+col1, col2 = st.columns(2)
+
+# Define the input fields in the first column
+with col1:
+    age = st.selectbox("Age Group", 
+                       ['[0-10)', '[10-20)', '[20-30)', '[30-40)', 
+                        '[40-50)', '[50-60)', '[60-70)', 
+                        '[70-80)', '[80-90)', '[90-100)'])
+    gender = st.selectbox("Gender", ["Male", "Female", "Unknown"])
+    race = st.selectbox("Race", ["Caucasian", "AfricanAmerican", "Hispanic", "Asian", "Other"])
+
+# Define the sliders in the second column
+with col2:
+    time_in_hospital = st.slider("Time in Hospital (days)", min_value=1, max_value=30, step=1)
+    num_lab_procedures = st.slider("Number of Lab Procedures", min_value=1, max_value=150, step=1)
+    num_procedures = st.slider("Number of Procedures", min_value=0, max_value=10, step=1)
+    num_medications = st.slider("Number of Medications", min_value=1, max_value=100, step=1)
+
+# Additional inputs for lab results and medication
+st.subheader("Lab Information")
+glucose_col, a1c_col = st.columns(2)
+
+with glucose_col:
+    max_glu_serum_transformed = st.selectbox("Max Glucose Serum", 
+                                              ['Not measured', 'Normal', 'Elevated', 'High'], 
+                                              index=0)
+
+with a1c_col:
+    A1Cresult_transformed = st.selectbox("A1C Result", 
+                                          ['Not measured', 'Normal', 'High'], 
+                                          index=0)
+
+# Medication information
+st.subheader("Medication Information")
+med_col1, med_col2 = st.columns(2)
+
+with med_col1:
+    diabetesMed = st.selectbox("Diabetes Medication", ["No", "Yes"])
+
+with med_col2:
+    change = st.selectbox("Change of Medications", ["No", "Yes"])
+
+# Medications list
+medications = [
+    'Metformin', 'Troglitazone', 'Examide', 'Citoglipton',
+    'Insulin', 'Glyburide-Metformin', 'Glipizide-Metformin', 
+    'Glimepiride-Pioglitazone', 'Metformin-Rosiglitazone', 
+    'Metformin-Pioglitazone', 'Sulfonylureas', 'Mitiglinides', 
+    'Thiazolidinediones', 'Glucosidase Inhibitors'
+]
+
+# Initialize a dictionary to hold medication selections
+med_inputs = {}
+
+# Create two columns for medications
+med_col1, med_col2 = st.columns(2)
+medication_disabled = diabetesMed == "No"
+
+with med_col1:
+    for med in medications[:len(medications)//2]:
+        med_inputs[med] = st.checkbox(med.capitalize(), value=False, disabled=medication_disabled)
+
+with med_col2:
+    for med in medications[len(medications)//2:]:
+        med_inputs[med] = st.checkbox(med.capitalize(), value=False, disabled=medication_disabled)
+
+# Encode the categorical variables
+age_cat = {
+    '[0-10)': 0, '[10-20)': 1, '[20-30)': 2, '[30-40)': 3, 
+    '[40-50)': 4, '[50-60)': 5, '[60-70)': 6, '[70-80)': 7, 
+    '[80-90)': 8, '[90-100)': 9
 }
+max_glu_serum_cat = {'Not measured': 0, 'Normal': 1, 'Elevated': 2, 'High': 3}
+A1Cresult_cat = {'Not measured': 0, 'Normal': 1, 'High': 2}
+binary_map = {"No": 0, "Yes": 1}
 
-# Function to preprocess input data
-def preprocess_input(data):
-    # Create a DataFrame from user input
-    df_input = pd.DataFrame(data, index=[0])
+# Create an input DataFrame based on user inputs
+input_data = pd.DataFrame({
+    'age': [age_cat[age]], 
+    'max_glu_serum_transformed': [max_glu_serum_cat[max_glu_serum_transformed]],
+    'A1Cresult_transformed': [A1Cresult_cat[A1Cresult_transformed]],
+    'time_in_hospital': [time_in_hospital],
+    'num_lab_procedures': [num_lab_procedures],
+    'num_procedures': [num_procedures],
+    'num_medications': [num_medications],
+    'race_AfricanAmerican': [1 if race == "AfricanAmerican" else 0],
+    'race_Asian': [1 if race == "Asian" else 0],
+    'race_Caucasian': [1 if race == "Caucasian" else 0],
+    'race_Hispanic': [1 if race == "Hispanic" else 0],
+    'race_Other': [1 if race == "Other" else 0],
+    'gender_Female': [1 if gender == "Female" else 0],
+    'gender_Male': [1 if gender == "Male" else 0],
+    'gender_Unknown': [1 if gender == "Unknown" else 0],
+    'change_Ch': [1 if change == "Yes" else 0],
+    'change_No': [1 if change == "No" else 0],
+    'diabetesMed_Yes': [1 if diabetesMed == "Yes" else 0],
+    'diabetesMed_No': [1 if diabetesMed == "No" else 0]
+})
 
-    # Apply ordinal encoding
-    for col in df_input.columns:
-        if col in cats:
-            df_input[col] = pd.Categorical(df_input[col], categories=cats[col], ordered=True)
-            df_input[col] = df_input[col].cat.codes
+# Add the medications to the input DataFrame using checkbox inputs
+for med in medications:
+    input_data[med] = [binary_map['Yes'] if med_inputs[med] else binary_map['No']]
 
-    # Grouping medications
-    for med in ['metformin', 'repaglinide', 'nateglinide', 'chlorpropamide', 
-                'glimepiride', 'acetohexamide', 'glipizide', 'glyburide', 
-                'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 
-                'miglitol', 'troglitazone', 'tolazamide', 'examide', 
-                'citoglipton', 'insulin', 'glyburide-metformin', 
-                'glipizide-metformin', 'glimepiride-pioglitazone', 
-                'metformin-rosiglitazone', 'metformin-pioglitazone']:
-        df_input[med] = 1 if df_input[med].values[0] == 'Yes' else 0
+# Normalize the input data using the same scaler as in the training process
+scaler = MinMaxScaler()
+normalized_input_data = scaler.fit_transform(input_data)
 
-    # Additional grouping logic 
-    df_input['SU'] = df_input[['chlorpropamide', 'glimepiride', 
-                                'acetohexamide', 'glipizide', 
-                                'glyburide', 'tolbutamide', 
-                                'tolazamide']].max(axis=1)
-    df_input['mitiglinides'] = df_input[['repaglinide', 'nateglinide']].max(axis=1)
-    df_input['thiazolidinediones'] = df_input[['pioglitazone', 'rosiglitazone']].max(axis=1)
-    df_input['glucosidase_inh'] = df_input[['acarbose','miglitol']].max(axis=1)
-
-    # Drop original medication columns
-    df_input.drop(columns=['chlorpropamide', 'glimepiride', 'acetohexamide', 
-                           'glipizide', 'glyburide', 'tolbutamide', 
-                           'tolazamide', 'repaglinide', 'nateglinide', 
-                           'pioglitazone', 'rosiglitazone', 'acarbose', 
-                           'miglitol'], inplace=True, errors='ignore')
-
-    # Selecting numerical features
-    num_f = df_input[['time_in_hospital', 'num_lab_procedures', 
-                      'num_procedures', 'num_medications']]
-    
-    # One-hot encoding of nominal features
-    nominal_features = [col for col in ['race', 'gender', 'change', 'diabetesMed'] if col in df_input.columns]
-    if nominal_features:
-        nominal_f = pd.get_dummies(df_input[nominal_features])
-    else:
-        nominal_f = pd.DataFrame()  # Create an empty DataFrame if no nominal features are present
-    
-    # Concatenate all features
-    X_all = pd.concat([nominal_f, num_f, df_input], axis=1)
-
-    # Normalizing the features
-    scaler = MinMaxScaler()
-    X_normalized = scaler.fit_transform(X_all.values)
-    
-    return pd.DataFrame(X_normalized, columns=X_all.columns)
-
-# Function for SHAP analysis
-def perform_shap_analysis(X):
-    # Create a SHAP explainer
-    explainer = shap.Explainer(model)
-
-    # Calculate SHAP values
-    shap_values = explainer(X)
-
-    return shap_values, explainer  # Return both shap_values and explainer
-
-# Streamlit UI
-st.title("Diabetes Readmission Prediction")
-
-# User inputs
-age = st.selectbox("Age Group:", options=cats['age'])
-max_glu = st.selectbox("Max Glucose Serum:", options=cats['max_glu_serum_transformed'])
-A1C = st.selectbox("A1C Result:", options=cats['A1Cresult_transformed'])
-time_in_hospital = st.number_input("Time in Hospital (days):", min_value=1, max_value=365)
-num_lab_procedures = st.number_input("Number of Lab Procedures:", min_value=0, max_value=100)
-num_procedures = st.number_input("Number of Procedures:", min_value=0, max_value=100)
-num_medications = st.number_input("Number of Medications:", min_value=1, max_value=100)
-
-# User input for medications
-medications = ['metformin', 'repaglinide', 'nateglinide', 'chlorpropamide', 
-               'glimepiride', 'acetohexamide', 'glipizide', 'glyburide', 
-               'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 
-               'miglitol', 'troglitazone', 'tolazamide', 'examide', 
-               'citoglipton', 'insulin', 'glyburide-metformin', 
-               'glipizide-metformin', 'glimepiride-pioglitazone', 
-               'metformin-rosiglitazone', 'metformin-pioglitazone']
-
-med_input = {med: st.selectbox(f"{med.capitalize()} (Yes/No):", ["Yes", "No"]) for med in medications}
-
-# User inputs for categorical variables
-race = st.selectbox("Race:", options=cats['race'])
-gender = st.selectbox("Gender:", options=cats['gender'])
-change = st.selectbox("Change in Medication:", options=cats['change'])
-diabetesMed = st.selectbox("Diabetes Medication:", options=cats['diabetesMed'])
-
-# Convert input to dictionary
-user_input = {
-    'age': age,
-    'max_glu_serum_transformed': max_glu,
-    'A1Cresult_transformed': A1C,
-    'time_in_hospital': time_in_hospital,
-    'num_lab_procedures': num_lab_procedures,
-    'num_procedures': num_procedures,
-    'num_medications': num_medications,
-    'race': race,
-    'gender': gender,
-    'change': change,
-    'diabetesMed': diabetesMed,
-    **med_input
-}
-
-# Button to make predictions and perform SHAP analysis
+# Prediction button
 if st.button("Predict Readmission"):
-    # Preprocess the user input
-    processed_input = preprocess_input(user_input)
-
-    # Make prediction
-    prediction = model.predict(processed_input)
-
-    # Output result
-    st.success("Prediction: {}".format("Readmitted" if prediction[0] == 1 else "Not Readmitted"))
-
-    # Perform SHAP analysis
-    shap_values, explainer = perform_shap_analysis(processed_input)
-
-    # SHAP summary plot
-    st.subheader("SHAP Summary Plot")
-    fig, ax = plt.subplots()  # Create a new figure and axis
-    shap.summary_plot(shap_values, feature_names=processed_input.columns, show=False)
-    st.pyplot(fig)  # Pass the figure to st.pyplot
-
-    # SHAP force plot for the first prediction
-    st.subheader("SHAP Force Plot")
-    fig2, ax2 = plt.subplots()  # Create another figure for the force plot
-    # Pass the correct values to the force plot
-    shap.force_plot(explainer.expected_value, shap_values.values[0], processed_input.values[0], matplotlib=True, show=False)
-    st.pyplot(fig2)  # Pass the figure to st.pyplot
+    prediction = model.predict(normalized_input_data)
+    st.write("The model predicts the patient will " + ("be readmitted." if prediction[0] == 1 else "not be readmitted."))
+    
+    # SHAP analysis
+    explainer = shap.Explainer(model)
+    shap_values = explainer(normalized_input_data)
+    
+    st.subheader("SHAP Analysis")
+    
+    # SHAP Force Plot
+    st.subheader("Force Plot")
+    
+    # Set feature names for SHAP values
+    feature_names = input_data.columns.tolist()
+    
+    # Plot SHAP force plot
+    fig, ax = plt.subplots(figsize=(8, 4))
+    shap.force_plot(explainer.expected_value, shap_values.values, input_data, matplotlib=True)
+    
+    # Display the plot in Streamlit
+    st.pyplot(fig)

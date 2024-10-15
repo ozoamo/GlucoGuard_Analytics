@@ -4,8 +4,11 @@ import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
 
-
-st.write("# Descriptive Analytics #")
+st.set_page_config(
+    page_title="GlucoGuard Dashboard",
+    page_icon="./assets/Page-icon.png",
+)
+st.sidebar.image("./assets/glucoguard-logo.png",)
 
 # Load the dataset
 df = pd.read_csv('diabetes_clean.csv')
@@ -13,9 +16,8 @@ df = pd.read_csv('diabetes_clean.csv')
 # Title p
 st.title('Descriptive Analytics of Diabetes Dataset')
 
-# page_icon="./assets/Page-icon.png"
-# Sidebar configuration
-st.sidebar.image("./assets/glucoguard-logo.png",)
+
+
 # Plot categorical distribution
 st.write("## Categorical Variable Distribution")
 # Sidebar for user selection
