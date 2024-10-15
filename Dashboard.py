@@ -15,24 +15,17 @@ st.sidebar.success("Select a tab above.")
 
 st.write("# Welcome to GlucoGuard! 👋")
 
-st.markdown(
-"""
-    Diabetes is a chronic condition, where either not enough insulin is being produced or the body(Type 1) is not able to use insulin to stabilise the glucose levels(Type 2). About 0.2% of all 30-day hospital readmissions consists on patients with diabetes mellitus(DM)[1]. Factors that increase the risk of being readmitted include comorbidities, repeated readmissions, demographics and length of stay[3].  By reducing hospital readmissions there is a potential of improving healthcare whilst reducing the healthcare costs[2]. 
-    
-    The web dashboard will provide the end user(healthcare professionals(Physicians, Nurses, Dieticians), Patients, healthcare providers and hospital management) with information concerning the readmission rates for diabetes patients. 
+st.markdown("""
+Diabetes is a chronic condition characterized by either insufficient insulin production (Type 1) or the body's inability to effectively use insulin to regulate glucose levels (Type 2). 
 
+Approximately **0.2%** of all 30-day hospital readmissions involve patients with diabetes mellitus (DM)【1】. Factors that increase the risk of readmission include:
+- Comorbidities
+- Repeated readmissions
+- Demographic factors
+- Length of stay【3】
 
-    
-"""
-)
+Reducing hospital readmissions can improve healthcare outcomes while also lowering healthcare costs【2】.
 
-# You can also add text right into the web as long comments (""")
-
-
-
-
-
-
-### UNCOMMENT THE CODE BELOW TO SEE EXAMPLE OF INPUT WIDGETS
-
-# DATAFRAME MANAGEMENT
+This web dashboard aims to provide valuable information regarding readmission rates for diabetes 
+patients, particularly for healthcare professionals such as physicians, nurses, and pharmacists.
+""")
