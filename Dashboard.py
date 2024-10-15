@@ -15,29 +15,17 @@ st.write("# Welcome to GlucoGuard! 👋")
 
 st.markdown(
 """
-    ## Aims
+    Diabetes is a chronic condition, where either not enough insulin is being produced or the body is not able to use insulin(Type 1) to stabilise the glucose levels(Type 2). About 0.2% of all 30-day hospital readmissions consists on patients with diabetes mellitus(DM)[1]. Factors that increase the risk of being readmitted include comorbidities, repeated readmissions, demographics and length of stay[3].  By reducing hospital readmissions there is a potential of improving healthcare whilst reducing the healthcare costs[2]. 
+    
+    The web dashboard will provide the end user(healthcare professionals(Physicians, Nurses, Dieticians), Patients, healthcare providers and hospital management) with information concerning the 30-day readmission rates for diabetes patients. 
 
-    - Apply knowledge gained from the DSHI course on a practical scenario related to a medical task.
-    - Build a web dashboard incorporating data science techniques to solve problems relevant to the selected medical dataset.
-    - Understand how user testing helps to iteratively improve technical systems for data science.
 
-    ## Deliverables
-    1. Web medical dashboard [6 points]
-    2. Final project report [10 points]
-    3. Portfolio showcasing video [1 point]
-    4. Final presentation with slides [3 points]
+    
 """
 )
 
 # You can also add text right into the web as long comments (""")
-"""
-The final project aims to apply data science concepts and skills on a 
-medical case study that you and your team select from a public data source.
-The project assumes that you bring the technical Python skills from 
-previous courses (*DSHI*: Data Science for Health Informatics), as well as 
-the analytical skills to argue how and why specific techniques could
-enhance the problem domain related to the selected dataset.
-"""
+
 
 
 
@@ -46,13 +34,3 @@ enhance the problem domain related to the selected dataset.
 ### UNCOMMENT THE CODE BELOW TO SEE EXAMPLE OF INPUT WIDGETS
 
 # DATAFRAME MANAGEMENT
-import numpy as np
-
-dataframe = np.random.randn(10, 20)
-st.dataframe(dataframe)
-
-# Add a slider to the sidebar:
-add_slider = st.slider(
-    'Select a range of values',
-    0.0, 100.0, (25.0, 75.0)
-)
