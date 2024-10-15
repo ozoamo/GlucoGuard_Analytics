@@ -2,7 +2,7 @@ import streamlit as st
 st.write("# About #")
 
 st.markdown(""" 
-            **Dataset**: The dataset contains information about diabetes patients records including; the medication taken and the readmission rates. 
+            **Dataset**: The dataset contains information about diabetes patients records including; the medication taken and the readmission rates[4]. 
             
             **Scientific references**:
             1. Soh JGS, Wong WP, Mukhopadhyay A, Quek SC, Tai BC. Predictors of 30-day unplanned hospital readmission among adult patients with diabetes mellitus: a systematic review with meta-analysis. BMJ Open Diabetes Res Care [Internet]. 2020;8(1):e001227. Available from: http://dx.doi.org/10.1136/bmjdrc-2020-001227 
