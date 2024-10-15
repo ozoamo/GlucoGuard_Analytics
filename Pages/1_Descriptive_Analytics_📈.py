@@ -53,24 +53,7 @@ st.markdown("""
             
 """)
 
-# Title 
-st.subheader('Age distribution - Histogram')
 
-# Extract the 'age' column for the histogram
-age_counts = df['age'].value_counts().reset_index()
-age_counts.columns = ['age', 'count']
-
-# Sort age groups if they are in categorical ranges
-age_counts = age_counts.sort_values('age')
-
-# Plotly histogram
-fig_1 = px.bar(age_counts, x='age', y='count', 
-             title='Age Distribution in Dataset',
-             labels={'age': 'Age Range', 'count': 'Frequency'},
-             template='plotly_white')
-
-# Display the histogram 
-st.plotly_chart(fig_1)
 
 # Group by readmission and calculate the average time in hospital
 time_in_hospital_mean = df.groupby('readmitted')['time_in_hospital'].mean()
