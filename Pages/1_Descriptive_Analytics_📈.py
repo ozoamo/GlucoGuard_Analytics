@@ -13,8 +13,9 @@ df = pd.read_csv('diabetes_clean.csv')
 # Title p
 st.title('Descriptive Analytics of Diabetes Dataset')
 
-
-
+# page_icon="./assets/Page-icon.png"
+# Sidebar configuration
+st.sidebar.image("./assets/glucoguard-logo.png",)
 # Plot categorical distribution
 st.write("## Categorical Variable Distribution")
 # Sidebar for user selection
