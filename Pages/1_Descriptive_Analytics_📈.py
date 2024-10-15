@@ -92,7 +92,7 @@ st.plotly_chart(fig_2)
 st.markdown("""
 ### Key Observations:
 
-1. The highest average time by readmission status were <30. The reason to why <30(Short term readmission) had the highest average time could be possibly due to ineffective treatments(changes in medication). This could be the cause to the high probability of being readmitted for short term treatments.
+1. The highest average time by readmission status were <30(Short term readmission). The reason to why <30(Short term readmission) had the highest average time could be possibly due to ineffective treatments(changes in medication). This could be the cause to the high probability of being readmitted for short term treatments.
 
 2. The lowest average time by readmission status were NO(no readmission). This may be due to proper treatment and fewer adverse effect, which could be the main cause behind the low probability of being readmitted for a long time.
 """)
