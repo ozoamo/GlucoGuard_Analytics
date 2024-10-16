@@ -16,7 +16,7 @@ st.set_page_config(
 st.sidebar.image("./assets/glucoguard-logo.png",)
 
 # Set the title of the Streamlit app
-st.title("Diagnostic Analytics")
+st.title("Glucoguard Diagnostic Dashboard")
 
 # Heatmap for Correlation between numerical features and readmission
 st.header("Correlation between Readmission and Other Features")

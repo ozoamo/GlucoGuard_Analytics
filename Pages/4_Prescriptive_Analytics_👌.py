@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # Set the title of the Streamlit app
-st.title("Prescriptive Analytics")
+st.title("Glucoguard Prescriptive Dashboard")
 
 # Sidebar configuration
 st.sidebar.image("./assets/glucoguard-logo.png")

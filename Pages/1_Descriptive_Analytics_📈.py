@@ -11,7 +11,7 @@ st.set_page_config(
 st.sidebar.image("./assets/glucoguard-logo.png",)
 
 # Title
-st.title('Descriptive Analytics')
+st.title('Glucoguard Descriptive Dashboard')
 
 # Load the dataset
 df = pd.read_csv('diabetes_clean.csv')
