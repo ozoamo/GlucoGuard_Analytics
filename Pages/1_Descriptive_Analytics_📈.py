@@ -10,13 +10,11 @@ st.set_page_config(
 )
 st.sidebar.image("./assets/glucoguard-logo.png",)
 
+# Title
+st.title('Descriptive Analytics')
+
 # Load the dataset
 df = pd.read_csv('diabetes_clean.csv')
-
-# Title p
-st.title('Descriptive Analytics of Diabetes Dataset')
-
-
 
 # Plot categorical distribution
 st.write("## Categorical Variable Distribution")
