@@ -1,25 +1,4 @@
 import streamlit as st
-import os
-import importlib.util
-
-# Function to dynamically load page modules from the pages folder
-def load_page(page_name):
-    page_path = os.path.join("pages", f"{page_name}.py")
-    spec = importlib.util.spec_from_file_location(page_name, page_path)
-    page_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(page_module)
-
-# Create a sidebar for navigation
-st.sidebar.header("Navigation")
-page = st.sidebar.selectbox("Choose a page", 
-                             ["Dashboard"] + [f[:-3] for f in os.listdir("pages") if f.endswith(".py")])
-
-# Load the selected page
-if page == "Dashboard":
-    st.write("Welcome to the Dashboard!")
-    # You can include additional dashboard content here if needed
-else:
-    load_page(page)
 
 st.set_page_config(
     page_title="GlucoGuard Dashboard",
