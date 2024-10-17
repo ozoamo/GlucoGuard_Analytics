@@ -81,7 +81,7 @@ with med_col2:
 
 # Medications list
 medications = [
-    'Metformin', 'Troglitazone', 'Examide', 'Citoglipton',
+    'Metformin', 'Examide', 'Citoglipton',
     'Insulin', 'Glyburide-Metformin', 'Glipizide-Metformin', 
     'Glimepiride-Pioglitazone', 'Metformin-Rosiglitazone', 
     'Metformin-Pioglitazone', 'Sulfonylureas', 'Mitiglinides', 
