@@ -50,8 +50,8 @@ st.markdown("""
 
 3. **Gender**: The data indicates that the gender with the highest amount of cases of diabetes is female.
 
-4. **Readmitted**: The data indicates that the highest amount of readmitted patients were the age of 30 or above.
-            
+4. **Readmitted**: The data indicates that the highest amount of readmitted patients were patients readmitted within 30 days(Short term readmission patients).
+             
 """)
 
 
