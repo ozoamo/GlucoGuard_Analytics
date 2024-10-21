@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 st.set_page_config(
     page_title="GlucoGuard Dashboard",
     
@@ -9,11 +10,17 @@ st.set_page_config(
 
 # Sidebar configuration
 st.sidebar.image("./assets/glucoguard-logo.png",)
-st.sidebar.success("Select a tab above.")
+#st.sidebar.success("Select a tab above.")
 
 # # Page information
 
 st.write("# Welcome to GlucoGuard! 👋")
+st.write("## Empowering Healthcare Professionals with Data-Driven Insights.")
+
+st.image("./assets/GIF.gif",  use_column_width=True)
+
+
+
 
 st.markdown("""
 Diabetes is a chronic condition characterized by either insufficient insulin production (Type 1) or the body's inability to effectively use insulin to regulate glucose levels (Type 2). 

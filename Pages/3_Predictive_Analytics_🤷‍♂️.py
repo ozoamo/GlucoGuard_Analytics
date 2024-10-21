@@ -16,8 +16,10 @@ page_title="GlucoGuard Dashboard",
 page_icon="./assets/Page-icon.png",
 )
 
+#3_Predictive_Analytics_🤷‍♂️
+
 # Set the title of the Streamlit app
-st.title("Glucoguard Predictive Dashboard")
+st.title("Glucoguard Predictive Analytics")
 
 # page_icon="./assets/Page-icon.png"
 # Sidebar configuration
@@ -30,7 +32,7 @@ st.markdown(
 )
 # Input features for prediction
 #st.header("Enter Patient and Clinical Data")
-st.markdown("<h2 style='font-size:20px;'>Enter Patient and Clinical Data</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='font-size:30px;'>Enter Patient and Clinical Data</h2>", unsafe_allow_html=True)
 # Create two columns for the input fields
 col1, col2 = st.columns(2)
 
@@ -57,6 +59,7 @@ with col2:
 
 # Create a row for Max Glucose Serum and A1C Result
 st.subheader("Lab Information")
+
 glucose_col, a1c_col = st.columns(2)
 
 with glucose_col:
