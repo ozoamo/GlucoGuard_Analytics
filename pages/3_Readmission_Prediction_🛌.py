@@ -32,8 +32,6 @@ st.markdown(
 # Input features for prediction
 st.markdown("<h2 style='font-size:20px;'>Enter Patient and Clinical Data</h2>", unsafe_allow_html=True)
 
-#st.header("Enter Patient and Clinical Data")
-st.markdown("<h2 style='font-size:30px;'>Enter Patient and Clinical Data</h2>", unsafe_allow_html=True)
 # Create two columns for the input fields
 col1, col2 = st.columns(2)
 
