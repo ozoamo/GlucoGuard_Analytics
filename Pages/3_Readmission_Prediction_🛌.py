@@ -4,7 +4,6 @@ import numpy as np
 import pickle
 import shap
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from sklearn.preprocessing import MinMaxScaler
 
 # Load the saved model
@@ -45,10 +44,10 @@ with col1:
 
 # Define the sliders in the second column
 with col2:
-    time_in_hospital = st.slider("Time in Hospital (days)", min_value=1, max_value=30, step=1)
-    num_lab_procedures = st.slider("Number of Lab Procedures", min_value=1, max_value=150, step=1)
+    time_in_hospital = st.slider("Time in Hospital (days)", min_value=0, max_value=60, step=1)
+    num_lab_procedures = st.slider("Number of Lab Procedures", min_value=0, max_value=50, step=1)
     num_procedures = st.slider("Number of Procedures", min_value=0, max_value=10, step=1)
-    num_medications = st.slider("Number of Medications", min_value=1, max_value=100, step=1)
+    num_medications = st.slider("Number of Medications", min_value=0, max_value=30, step=1)
 
 # Additional inputs for lab results and medication
 st.subheader("Lab Information")
@@ -76,7 +75,7 @@ with med_col2:
 
 # Medications list
 medications = [
-    'Metformin', 'Troglitazone', 'Examide', 'Citoglipton',
+    'Metformin', 'Examide', 'Citoglipton',
     'Insulin', 'Glyburide-Metformin', 'Glipizide-Metformin', 
     'Glimepiride-Pioglitazone', 'Metformin-Rosiglitazone', 
     'Metformin-Pioglitazone', 'Sulfonylureas', 'Mitiglinides', 
@@ -139,6 +138,11 @@ for med in medications:
 scaler = MinMaxScaler()
 normalized_input_data = scaler.fit_transform(input_data)
 
+def st_shap(plot, height=None):
+    """Function to display a SHAP plot in Streamlit."""
+    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
+    st.components.v1.html(shap_html, height=height)
+
 # Prediction button
 if st.button("Predict Readmission"):
     prediction = model.predict(normalized_input_data)
@@ -153,12 +157,39 @@ if st.button("Predict Readmission"):
     # SHAP Force Plot
     st.subheader("Force Plot")
     
-    # Set feature names for SHAP values
-    feature_names = input_data.columns.tolist()
+    shap.initjs()  # Initialize JavaScript for SHAP
     
-    # Plot SHAP force plot
-    fig, ax = plt.subplots(figsize=(8, 4))
-    shap.force_plot(explainer.expected_value, shap_values.values, input_data, matplotlib=True)
-    
-    # Display the plot in Streamlit
-    st.pyplot(fig)
+    # Only include features that have non-zero or non-empty input
+
+    # Filter out the features that were not selected or are irrelevant
+    relevant_features = input_data.columns[(input_data != 0).any(axis=0)]  # Filter non-zero features
+    relevant_input_data = input_data[relevant_features]  # Filter input data accordingly
+    relevant_shap_values = shap_values.values[0][:len(relevant_features)]  # Filter SHAP values to match
+
+    # Display filtered force plot
+    st_shap(shap.force_plot(explainer.expected_value, relevant_shap_values, relevant_input_data.iloc[0, :]))
+
+    st.subheader("Explanation:")
+    st.write("The plot shows which patient's characteristics contributed to the possibility of this patient's readmission. Features in red contributed to a higher likelihood of the readmission while the ones in blue contributed to a lower likelihood of admission.")
+
+    # Separate positive and negative contributions
+    positive_contributions = [(name, value) for name, value in zip(relevant_features, relevant_shap_values) if value > 0]
+    negative_contributions = [(name, value) for name, value in zip(relevant_features, relevant_shap_values) if value < 0]
+
+    # Display the positive contributions
+    st.subheader("Features contributing to a positive prediction")
+    if positive_contributions:
+        for feature, value in positive_contributions:
+            st.write(f"Feature: **{feature}** | SHAP Value: **{value:.4f}**")
+    else:
+        st.write("No positive contributions for this prediction.")
+
+    # Display the negative contributions
+    st.subheader("Features contributing to a negative prediction")
+    if negative_contributions:
+        for feature, value in negative_contributions:
+            st.write(f"Feature: **{feature}** | SHAP Value: **{value:.4f}**")
+    else:
+        st.write("No negative contributions for this prediction.")
+
+st.write("**Please note that if the characteristcs contributing to the prediction are not clinically significant, consider clinical judgement over the result of this tool.**")
