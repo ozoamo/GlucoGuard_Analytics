@@ -16,6 +16,8 @@ st.set_page_config(
     page_icon="./assets/Page-icon.png",
 )
 
+#3_Predictive_Analytics_🤷‍♂️
+
 # Set the title of the Streamlit app
 st.title("Glucoguard Prescriptive Dashboard")
 
@@ -30,6 +32,8 @@ st.markdown(
 # Input features for prediction
 st.markdown("<h2 style='font-size:20px;'>Enter Patient and Clinical Data</h2>", unsafe_allow_html=True)
 
+#st.header("Enter Patient and Clinical Data")
+st.markdown("<h2 style='font-size:30px;'>Enter Patient and Clinical Data</h2>", unsafe_allow_html=True)
 # Create two columns for the input fields
 col1, col2 = st.columns(2)
 
@@ -51,6 +55,7 @@ with col2:
 
 # Additional inputs for lab results and medication
 st.subheader("Lab Information")
+
 glucose_col, a1c_col = st.columns(2)
 
 with glucose_col:

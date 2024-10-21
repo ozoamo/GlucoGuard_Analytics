@@ -16,10 +16,11 @@ st.set_page_config(
 st.sidebar.image("./assets/glucoguard-logo.png",)
 
 # Set the title of the Streamlit app
-st.title("Glucoguard Diagnostic Dashboard")
+st.title("Glucoguard Diagnostic Analytics")
 
 # Heatmap for Correlation between numerical features and readmission
-st.header("Correlation between Readmission and Other Features")
+st.markdown("##### Discover how different patient and clinical factors are related to the chances of readmission.")
+st.markdown("###### Select a feature (or multiple features) to explore the correlation with readmission:")
 
 # Binarize some categorical features
 df['readmitted'] = df['readmitted'].apply(lambda x: 0 if x == 'NO' else 1)
@@ -50,19 +51,39 @@ numerical_cols = df.select_dtypes(include=['int64', 'float64']).columns
 excluded_features = ['patient_nbr', 'encounter_id']
 numerical_cols = [col for col in numerical_cols if col not in excluded_features]
 
+# Mapping original column names to user-friendly labels
+friendly_name_map = {
+    'age': 'Age',
+    'number_inpatient': 'Number of Inpatient Visits',
+    'number_outpatient': 'Number of Outpatient Visits',
+    'number_emergency': 'Number of Emergency Visits',
+    'time_in_hospital': 'Time in Hospital',
+    'num_lab_procedures': 'Number of Lab Procedures',
+    'num_medications': 'Number of Medications',
+    'readmitted': 'Readmitted',
+    # Add more mappings as needed
+}
+
+# Reverse mapping to convert friendly names back to original column names
+reverse_friendly_name_map = {v: k for k, v in friendly_name_map.items()}
+
 # Ensure 'readmitted' is part of the selected features
 if 'readmitted' not in df.columns:
     st.error("The 'readmitted' feature is not in the dataset. Please check your data.")
 else:
-    # Add a multiselect widget for the user to choose the numerical features (excluding 'readmitted' and excluded features)
-    selected_features = st.multiselect(
-        'Select numerical features for the heatmap:',
-        options=numerical_cols,
+    # Add a multiselect widget for the user to choose numerical features using friendly names
+    selected_friendly_names = st.multiselect(
+        '',
+        options=[friendly_name_map[col] for col in numerical_cols if col in friendly_name_map],
         default=[]  # Default to no additional features selected
     )
 
-    # Always include 'readmitted' in the selected features
-    selected_features.append('readmitted')
+    # Map selected friendly names back to original column names
+    selected_features = [reverse_friendly_name_map[name] for name in selected_friendly_names]
+
+    # If 'readmitted' is not in the selected features, append it automatically
+    if 'readmitted' not in selected_features:
+        selected_features.append('readmitted')
 
     # Check if at least two features are selected
     if len(selected_features) < 2:
@@ -77,8 +98,8 @@ else:
 
         fig = ff.create_annotated_heatmap(
             z=z,
-            x=corr_matrix.columns.tolist(),
-            y=corr_matrix.columns.tolist(),
+            x=[friendly_name_map[col] for col in corr_matrix.columns],
+            y=[friendly_name_map[col] for col in corr_matrix.columns],
             colorscale='RdBu',
             showscale=True,
             annotation_text=annotations,  # Use formatted annotations
@@ -88,22 +109,23 @@ else:
         # Display the interactive heatmap
         st.plotly_chart(fig)
 
-        # Display the correlation values with readmitted
+        # Display the correlation values with 'readmitted'
         readmitted_correlation = corr_matrix['readmitted'].drop('readmitted')  # Exclude self-correlation
         correlation_values = readmitted_correlation.reset_index()
         correlation_values.columns = ['Feature', 'Correlation with Readmitted']
-        
-        # Key points section
-        st.write("### Key Points")
-        st.markdown("""
-        1. None of the features have a strong correlation with readmission.
-        2. The number of inpatient visits has the strongest correlation with readmission (0.2), 
-            indicating that patients with more inpatient visits are more likely to be readmitted.
-        3. The feature with the weakest correlation with readmission is the admission type ID, 
-            which indicates the department from which the patient was admitted, 
-            such as the emergency department, urgent care, or elective care, 
-            with a correlation value of -0.01.
-        """)
+        st.dataframe(correlation_values)
+
+# Key points section
+st.write("### Key Points")
+st.markdown("""
+    1. None of the features have a strong correlation with readmission.
+    2. The number of inpatient visits has the strongest correlation with readmission (0.2), 
+        indicating that patients with more inpatient visits are more likely to be readmitted.
+    3. The feature with the weakest correlation with readmission is the admission type ID, 
+        which indicates the department from which the patient was admitted, 
+        such as the emergency department, urgent care, or elective care, 
+        with a correlation value of -0.01.
+    """)
 
 # Chi square analysis for categorical features
 st.header("Chi-Square Analysis for Categorical Features with Readmission")
