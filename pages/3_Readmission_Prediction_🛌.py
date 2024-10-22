@@ -19,7 +19,7 @@ st.set_page_config(
 #3_Predictive_Analytics_🤷‍♂️
 
 # Set the title of the Streamlit app
-st.title("Glucoguard Prescriptive Dashboard")
+st.title("Readmission Prediction")
 
 # Sidebar configuration
 st.sidebar.image("./assets/glucoguard-logo.png")
@@ -46,9 +46,10 @@ with col1:
 
 # Define the sliders in the second column
 with col2:
-    time_in_hospital = st.slider("Time in Hospital (days)", min_value=0, max_value=60, step=1)
-    num_lab_procedures = st.slider("Number of Lab Procedures", min_value=0, max_value=50, step=1)
-    num_procedures = st.slider("Number of Procedures", min_value=0, max_value=10, step=1)
+    time_in_hospital = st.slider("Time in Hospital (days)", min_value=0, max_value=20, step=1)
+    num_lab_procedures = st.slider("Total Lab Tests Conducted", min_value=0, max_value=150, step=1)
+    num_procedures = st.slider("Total Medical Procedures Performed", min_value=0, max_value=10, step=1,
+                               help="Examples include: hemodialysis, diabetic foot care, cardiac stenting.")
     num_medications = st.slider("Number of Medications", min_value=0, max_value=30, step=1)
 
 # Additional inputs for lab results and medication

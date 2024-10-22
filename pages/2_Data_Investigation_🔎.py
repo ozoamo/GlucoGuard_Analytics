@@ -19,8 +19,16 @@ st.sidebar.image("./assets/glucoguard-logo.png",)
 st.title("Glucoguard Diagnostic Analytics")
 
 # Heatmap for Correlation between numerical features and readmission
-st.markdown("##### Discover how different patient and clinical factors are related to the chances of readmission.")
-st.markdown("###### Select a feature (or multiple features) to explore the correlation with readmission:")
+st.markdown("#### Discover how different patient and clinical factors are related to the chances of readmission.")
+st.header("Pearson Correlation Analysis")
+
+st.markdown("""
+The Pearson correlation coefficient measures the strength and direction of the linear relationship between two continuous variables. This statistic ranges from **-1 to 1**. 
+
+- A value of **1** indicates a perfect **positive correlation**, meaning that as one variable increases, the other variable also increases proportionally. 
+- A value of **-1** indicates a perfect **negative correlation**, where an increase in one variable results in a decrease in the other. 
+- A value of **0** indicates **no linear correlation** between the variables. 
+""")
 
 # Binarize some categorical features
 df['readmitted'] = df['readmitted'].apply(lambda x: 0 if x == 'NO' else 1)
@@ -71,12 +79,22 @@ reverse_friendly_name_map = {v: k for k, v in friendly_name_map.items()}
 if 'readmitted' not in df.columns:
     st.error("The 'readmitted' feature is not in the dataset. Please check your data.")
 else:
+    # Determine available options for multiselect
+    options = [friendly_name_map[col] for col in numerical_cols if col in friendly_name_map]
+
     # Add a multiselect widget for the user to choose numerical features using friendly names
     selected_friendly_names = st.multiselect(
         '',
         options=[friendly_name_map[col] for col in numerical_cols if col in friendly_name_map],
         default=[]  # Default to no additional features selected
     )
+
+    # Add a checkbox to select/deselect all features
+    select_all = st.checkbox("Select All Features", value=False)
+    
+    # If "Select All Features" is checked, set default to all options, else default to none
+    if select_all:
+        selected_friendly_names = options
 
     # Map selected friendly names back to original column names
     selected_features = [reverse_friendly_name_map[name] for name in selected_friendly_names]
@@ -87,7 +105,7 @@ else:
 
     # Check if at least two features are selected
     if len(selected_features) < 2:
-        st.warning("Please select at least one numerical feature to display the correlation heatmap.")
+        st.info("Please select at least one feature to display the correlation heatmap.")
     else:
         # Calculate the correlation matrix based on selected features
         corr_matrix = df[selected_features].corr()
@@ -109,82 +127,96 @@ else:
         # Display the interactive heatmap
         st.plotly_chart(fig)
 
-        # Display the correlation values with 'readmitted'
-        readmitted_correlation = corr_matrix['readmitted'].drop('readmitted')  # Exclude self-correlation
-        correlation_values = readmitted_correlation.reset_index()
-        correlation_values.columns = ['Feature', 'Correlation with Readmitted']
-        st.dataframe(correlation_values)
-
-# Key points section
-st.write("### Key Points")
-st.markdown("""
-    1. None of the features have a strong correlation with readmission.
-    2. The number of inpatient visits has the strongest correlation with readmission (0.2), 
+        # Key points section
+        st.write("### Interpretations")
+        st.markdown("""
+        1. None of the features have a strong correlation with readmission.
+        2. The number of inpatient visits has the strongest correlation with readmission (0.2), 
         indicating that patients with more inpatient visits are more likely to be readmitted.
-    3. The feature with the weakest correlation with readmission is the admission type ID, 
-        which indicates the department from which the patient was admitted, 
-        such as the emergency department, urgent care, or elective care, 
-        with a correlation value of -0.01.
-    """)
+        3. The feature with the weakest correlation with readmission is age 
+        with a correlation value of 0.02. The low correlation suggests that age has little 
+        to no impact on the likelihood of hospital readmission for the diabetic patients.
+        """)
 
 # Chi square analysis for categorical features
-st.header("Chi-Square Analysis for Categorical Features with Readmission")
+st.header("Chi-Square Analysis")
 st.markdown("""
 The Chi-Square test evaluates whether there is a significant association between two categorical variables. 
-A low p-value (typically < 0.05) indicates that we can reject the null hypothesis of independence, 
-suggesting a significant relationship between the variables.
+
+**A low p-value** (typically < 0.05) indicates that we can reject the null hypothesis of independence, 
+suggesting a **significant relationship** between the variables.
 """)
 
 # Function to perform Chi-Square Test and collect results
 def chi_square_test(var1, var2):
-    if df[var1].dtype.kind in 'bi' and df[var2].dtype.kind in 'bi':
-        contingency_table = pd.crosstab(df[var1], df[var2])
-        chi2, p, dof, expected = chi2_contingency(contingency_table)
-        return chi2, p, dof, contingency_table
-    else:
-        st.error(f"Error: Both variables must be categorical for Chi-square test")
-        return None, None, None, None
+    results = []
+    for feature in var2:
+        if df[var1].dtype.kind in 'bi' and df[feature].dtype.kind in 'bi':
+            contingency_table = pd.crosstab(df[var1], df[feature])
+            chi2, p, dof, expected = chi2_contingency(contingency_table)
+            results.append((feature, chi2, p, dof, contingency_table))
+        else:
+            results.append((feature, None, None, None, None))  # Append None for error handling
+    return results
 
-# User selects a feature for Chi-Square test
-selected_feature = st.selectbox("Select a categorical feature to analyze with 'readmitted':", 
-                                 options=['metformin', 'insulin', 'change', 'gender'])
+# User selects features for Chi-Square test
+features = ['metformin', 'insulin', 'change', 'gender']
+selected_features = st.multiselect('',options=features)
 
-# Perform Chi-Square test for the selected feature
-chi2, p, dof, contingency_table = chi_square_test('readmitted', selected_feature)
+# Place the "Select All" checkbox below the multiselect box
+select_all = st.checkbox("Select All", value=False)
 
-# Calculate Pearson Correlation Coefficients
-pearson_results = {
-    'Feature': ['metformin', 'insulin', 'change', 'gender'],
-    'Pearson Correlation Coefficient': [
-        df['readmitted'].corr(df['metformin']),
-        df['readmitted'].corr(df['insulin']),
-        df['readmitted'].corr(df['change']),
-        df['readmitted'].corr(df['gender'])
-    ]
-}
+# Update selected features based on the "Select All" checkbox
+if select_all:
+    selected_features = features
 
-# Store Chi-Square test results in a DataFrame
-chi_square_results = {
-    'Feature': selected_feature,
-    'Chi-Square Statistic': chi2,
-    'p-value': p,
-    'Degrees of Freedom': dof,
-}
+# Only perform Chi-Square tests if at least one feature is selected
+if selected_features:
+    # Perform Chi-Square tests for the selected features
+    chi_square_results = chi_square_test('readmitted', selected_features)
 
-# Combine results into a single DataFrame
-combined_results = pd.DataFrame(pearson_results)
-chi_square_df = pd.DataFrame([chi_square_results])
-combined_results = combined_results.merge(chi_square_df, on='Feature')
+    # Calculate Pearson Correlation Coefficients for selected features
+    pearson_results = {
+        'Feature': [],
+        'Pearson Correlation Coefficient': [],
+    }
 
-# Display the combined results in Streamlit
-st.markdown("### Comparison of Correlation and Chi-Square Test")
-st.write(combined_results)
+    for feature in selected_features:
+        pearson_coef = df['readmitted'].corr(df[feature])
+        pearson_results['Feature'].append(feature)
+        pearson_results['Pearson Correlation Coefficient'].append(pearson_coef)
 
-# Results Interpretation
-st.markdown("### Key Point")
-st.markdown("""
-While the Pearson correlations for metformin, insulin, change, and gender with readmission are weak, 
-the Chi-square tests show **significant associations**. This implies that these 
-variables have a significant relationship with whether a patient is readmitted, 
-even though their linear relationships are minimal.
-""")
+    # Store Chi-Square test results in a DataFrame
+    chi_square_data = []
+    for feature, chi2, p, dof, _ in chi_square_results:
+        if chi2 is not None:  # Only add valid results
+            chi_square_data.append({
+                'Feature': feature,
+                'Chi-Square Statistic': chi2,
+                'p-value': p,
+                'Degrees of Freedom': dof,
+            })
+
+    # Combine results into a single DataFrame
+    chi_square_df = pd.DataFrame(chi_square_data)
+    pearson_df = pd.DataFrame(pearson_results)
+
+    # Merge results
+    combined_results = pearson_df.merge(chi_square_df, on='Feature')
+
+    # Display the combined results in Streamlit
+    st.markdown("### Comparison of Correlation and Chi-Square Test")
+    st.write(combined_results)
+
+    # Results Interpretation
+    st.markdown("### Interpretations")
+    st.markdown("""
+    While the Pearson correlations for selected features with readmission are weak, 
+    the Chi-square tests show **significant associations**. This implies that these 
+    variables have a significant relationship with whether a patient is readmitted, 
+    even though their linear relationships are minimal.
+    """)
+
+# Optional: Display a message when no features are selected
+else:
+    st.info("Please select at least one feature to perform the analysis.")
