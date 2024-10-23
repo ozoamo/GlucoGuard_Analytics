@@ -174,7 +174,7 @@ if st.button("Predict Readmission"):
     st_shap(shap.force_plot(explainer.expected_value, relevant_shap_values, relevant_input_data.iloc[0, :]))
 
     st.subheader("Explanation:")
-    st.write("The plot shows which patient's characteristics contributed to the possibility of this patient's readmission. Features in red contributed to a higher likelihood of the readmission while the ones in blue contributed to a lower likelihood of admission.")
+    st.write("The plot shows which patient's characteristics contributed to the possibility of this patient's readmission. Features in red contributed to a higher likelihood of readmission (a positive prediction) while the ones in blue contributed to a lower likelihood of readmission (a negative prediction).")
 
     # Separate positive and negative contributions
     positive_contributions = [(name, value) for name, value in zip(relevant_features, relevant_shap_values) if value > 0]
