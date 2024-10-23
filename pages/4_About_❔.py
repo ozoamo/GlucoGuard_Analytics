@@ -70,6 +70,7 @@ st.markdown("""
     2. Rubin DJ. Hospital readmission of patients with diabetes. Curr Diab Rep [Internet]. 2015;15(4):17. Available from: http://dx.doi.org/10.1007/s11892-015-0584-7
     3. Zisman-Ilani Y, Fasing K, Weiner M, Rubin DJ. Exercise capacity is associated with hospital readmission among patients with diabetes. BMJ Open Diabetes Res Care [Internet]. 2020;8(1):e001771. Available from: http://dx.doi.org/10.1136/bmjdrc-2020-001771
     4. UCI machine learning repository [Internet]. Uci.edu. [cited 2024 Oct 15]. Available from: https://archive.ics.uci.edu/dataset/34/diabetes 
-""")
+    5. 	Graal MB, Wolffenbuttel BH. The use of sulphonylureas in the elderly. Drugs Aging. 1999 Dec;15(6):471–81. 
+    """)
 
 
