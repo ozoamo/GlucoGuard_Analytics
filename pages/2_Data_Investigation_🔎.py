@@ -164,7 +164,7 @@ features = ['metformin', 'insulin', 'change', 'gender']
 selected_features = st.multiselect('',options=features)
 
 # Place the "Select All" checkbox below the multiselect box
-select_all = st.checkbox("Select All Features", value=False)
+select_all = st.checkbox("Select All", value=False)
 
 # Update selected features based on the "Select All" checkbox
 if select_all:
