@@ -10,6 +10,7 @@ st.set_page_config(
 
 # Sidebar configuration
 st.sidebar.image("./assets/glucoguard-logo.png",)
+
 #st.sidebar.success("Select a tab above.")
 
 # # Page information
@@ -35,7 +36,7 @@ Please watch the video below to learn more about the functionality offered in th
 """)
 
 # Embed a video from a local file
-video_file = open('assets\WhatsApp Video 2024-10-23 at 01.43.43_f39b376a.mp4', 'rb')
+video_file = open('./assets/WhatsApp Video 2024-10-23 at 01.43.43_f39b376a.mp4', 'rb')
 video_bytes = video_file.read()
 
 st.video(video_bytes)
