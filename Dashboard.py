@@ -21,7 +21,7 @@ st.write("## Empowering Healthcare Professionals with Data-Driven Insights.")
 st.markdown("""
 Diabetes is a chronic condition characterized by either insufficient insulin production (Type 1) or the body's inability to effectively use insulin to regulate glucose levels (Type 2). 
 
-Approximately **0.2%** of all 30-day hospital readmissions involve patients with diabetes mellitus (DM)【1】. Factors that increase the risk of readmission include:
+Approximately **20 %** of all 30-day hospital readmissions involve patients with diabetes mellitus (DM)【1】. Factors that increase the risk of readmission include:
 - Comorbidities
 - Repeated readmissions
 - Demographic factors
