@@ -1,24 +1,12 @@
-# PROHI Dashboard Example
+# GlucoGuard Analytics web dashboard
 
-# GlucoGuard
+The objective of the project is to develop a web-based dashboard designed to
+present the results of analyzing the diabetic patient dataset from the UCI Repository
+(https://archive.ics.uci.edu/dataset/34/diabetes). 
 
-_You can modify this README file with all the information that your team consider relevant for a technical audience who would like to understand your project or to run it in the future._
-
-_Note that this file is written in **MarkDown** language. A reference is available here: <https://www.markdownguide.org/basic-syntax/>_
-
-Include the name, logo and images refering to your project
-
-![Your dashboard](./assets/example-image.jpg)
-
-## Introduction
-
-[Project ] is an interactive web dashboard to.... 
-
-The problem detected was...
-
-The proposed solution is valuable because...
-
-## System description
+The dashboard consist of detailed information regarding the dataset, results from descriptive and diagnostic
+analytics, a prediction engine, and SHAP analysis. 
+The targeted end users are healthcare professionals to better understand diabetic patient characteristics and outcomes, particularly hospital readmission.
 
 ### Dependencies
 
@@ -54,7 +42,3 @@ To run the dashboard execute the following command:
 # If the command above fails, use:
 > python -m streamlit run Dashboard.py
 ```
-
-## Contributors
-
-_Add the project's authors, contact information, and links to their websites or portfolios._
